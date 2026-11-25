@@ -1,0 +1,42 @@
+name: Build APK
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip project
+        run: |
+          if [ -f QuranApp.zip ]; then unzip -q -o QuranApp.zip; fi
+          if [ -d QuranApp ]; then echo "DIR=QuranApp" >> $GITHUB_ENV; else echo "DIR=." >> $GITHUB_ENV; fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build debug APK
+        working-directory: ${{ env.DIR }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Rename APK
+        run: cp ${{ env.DIR }}/app/build/outputs/apk/debug/app-debug.apk Quran-${{ github.run_number }}.apk
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Quran build ${{ github.run_number }}
+          files: Quran-${{ github.run_number }}.apk

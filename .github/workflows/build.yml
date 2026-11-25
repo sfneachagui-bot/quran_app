@@ -15,7 +15,7 @@ jobs:
 
       - name: Unzip project
         run: |
-          if [ -f QuranApp.zip ]; then unzip -q -o QuranApp.zip; fi
+          for z in *.zip; do [ -f "$z" ] && unzip -q -o "$z"; done
           if [ -d QuranApp ]; then echo "DIR=QuranApp" >> $GITHUB_ENV; else echo "DIR=." >> $GITHUB_ENV; fi
 
       - uses: actions/setup-java@v4
